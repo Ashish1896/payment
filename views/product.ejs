@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Razorpay Web-Integration</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+</head>
+
+<body>
+    <hr/>
+
+    <div style="display:inline-block">
+        <img src="https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHNoaXJ0fGVufDB8fDB8fHww" alt="" width="200px" height="200px">
+        <p>Shirt</p>
+        <p><b>Amount:- Rs. 500</b></p>
+        <form class="pay-form">
+            <input type="hidden" name="name" value="Shirt">
+            <input type="hidden" name="amount" value="500">
+            <input type="hidden" name="description" value="Shirt Buying">
+            <input type="submit" value="Pay Now">
+        </form>
+    </div>
+
+    <div style="display:inline-block">
+        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8fDA%3D" alt="" width="200px" height="200px">
+        <p>Shoes</p>
+        <p><b>Amount:- Rs. 1500</b></p>
+        <form class="pay-form">
+            <input type="hidden" name="name" value="Shoes">
+            <input type="hidden" name="amount" value="1500">
+            <input type="hidden" name="description" value="Shoes Buying">
+            <input type="submit" value="Pay Now">
+        </form>
+    </div>
+
+</body>
+
+</html>
+
+<!--Inside index.html -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+$(document).ready(function(){
+    $('.pay-form').submit(function(e){
+        e.preventDefault();
+
+        var formData = $(this).serialize();
+
+        $.ajax({
+            url:"/createOrder",
+            type:"POST",
+            data: formData,
+            success:function(res){
+                if(res.success){
+                    var options = {
+                        "key": ""+res.key_id+"",
+                        "amount": ""+res.amount+"",
+                        "currency": "INR",
+                        "name": ""+res.product_name+"",
+                        "description": ""+res.description+"",
+                        "image": "https://images.unsplash.com/photo-1484557985045-edf25e08da73?q=80&w=1073&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "order_id": ""+res.order_id+"",
+                        "handler": function (response){
+                            alert("Payment Succeeded");
+                            // window.open("/","_self")
+                        },
+                        "prefill": {
+                            "contact":""+res.contact+"",
+                            "name": ""+res.name+"",
+                            "email": ""+res.email+""
+                        },
+                        "notes" : {
+                            "description":""+res.description+""
+                        },
+                        "theme": {
+                            "color": "#2300a3"
+                        },
+                        "cancel": function(){
+                            alert("Payment Cancelled");
+                        }
+                    };
+                    var razorpayObject = new Razorpay(options);
+                    razorpayObject.on('payment.failed', function (response){
+                            alert("Payment Failed");
+                    });
+                    razorpayObject.open();
+                }
+                else{
+                    alert(res.msg);
+                }
+            }
+        })
+
+    });
+});
+
+</script>
